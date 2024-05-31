@@ -10,6 +10,6 @@ urlpatterns = [
     path('product_category/<int:pk>/', ProductCategoryApiView.as_view({'get': 'retrieve', 'put':'update', 'delete':'destroy'}),name='product_category'),
     path('supplier/', SupplierApiView.as_view({'get': 'list','post':'create'}),name='supplier'),
     path('supplier/<int:pk>/', SupplierApiView.as_view({'get': 'retrieve', 'put':'update', 'delete':'destroy'}),name='supplier'),
-    path('purchase/', PurchaseApiView.as_view({'get': 'list','post':'create'}),name='purchase'),
-    path('purchase/<int:pk>/', PurchaseApiView.as_view({'get': 'retrieve', 'put':'update', 'delete':'destroy'}),name='purchase'),
+    path('purchase/', PurchaseApiView.as_view()),
+    path('purchase/<int:pk>/', PurchaseDetailApiView.as_view()),
 ]
