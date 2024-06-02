@@ -14,4 +14,5 @@ urlpatterns = [
     path('purchase/<int:pk>/', PurchaseDetailApiView.as_view()),
     path('login/',Login, name='login'),
     path('register/',register, name='register'),
+    path('role/',groups, name='groups'),
 ]

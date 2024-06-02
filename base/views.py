@@ -10,26 +10,57 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth.hashers import make_password
 from .models import *
 from .serializers import *
+from .permissions import CustomPermissions
+from django.contrib.auth.models import Group
+from django.db.models import Q 
 # Create your views here.
 
 class DepartmentApiView(ModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
+    search_fields = ['name']
 class ProductApiView(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    filterset_fields = ['category','department']
+    search_fields = ['name']
+    #OR CLause
+    #For OR clause you need to comment this code: filterset_fields = ['category','department']
+    # def get_queryset(self):
+    #     queryset = super().get_queryset()
+    #     category = self.request.query_params.get('category')
+    #     department = self.request.query_params.get('department')
+    
+    #     if category and department:
+    #         queryset = queryset.filter(Q(category=category) | Q(department=department))
+    #     elif category:
+    #         queryset = queryset.filter(category=category)
+    #     elif department:
+    #         queryset = queryset.filter(department=department)
+    #     return queryset
+
 class ProductCategoryApiView(ModelViewSet):
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategorySerializer
+    def get(self, request):
+        queryset = self.get_queryset()
+        filter_queryset = self.filter_queryset(queryset)
+        serializer= self.serializer_class(filter_queryset,many=True)
+        return Response(serializer.data)
+    search_fields = ['name']
 class SupplierApiView(ModelViewSet):
     queryset = Supplier.objects.all()
     serializer_class = SupplierSerializer
+    search_fields = ['name']
 class PurchaseApiView(GenericAPIView):
     queryset = Purchase.objects.all()
     serializer_class = PurchaseSerializer
+    filterset_fields = ['product','supplier']
+    search_fields = ['name']
     def get(self,request):
         queryset = self.get_queryset()
-        serializer= self.serializer_class(queryset,many=True)
+        filter_queryset = self.filter_queryset(queryset)
+        serializer= self.serializer_class(filter_queryset,many=True)
         return Response(serializer.data)
     def post(self,request):
         serializer = self.serializer_class(data=request.data)
@@ -42,6 +73,7 @@ class PurchaseApiView(GenericAPIView):
 class PurchaseDetailApiView(GenericAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    search_fields = ['name']
     def get(self, request, pk):
         try:
             queryset = Product.objects.get(id=pk)
@@ -97,3 +129,10 @@ def register(request):
         return Response('Data Created!', status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+@permission_classes([AllowAny,]) #This permission class should always below the api view
+def groups(request):
+    groups_obj = Group.objects.all()
+    serializer = GroupSerializer(groups_obj, many = True)
+    return Response(serializer.data)
