@@ -12,6 +12,9 @@ class User(AbstractUser):
     
 class ProductCategory(models.Model):
     name = models.CharField(max_length = 200)
+    def __str__(self):
+        return self.name #returns the name in admin panel
+    
     
 class Department(models.Model):
     name = models.CharField(max_length = 200)
@@ -23,6 +26,8 @@ class Product(models.Model):
     stock = models.IntegerField()
     category = models.ForeignKey(ProductCategory,on_delete = models.SET_NULL, null = True)
     department = models.ManyToManyField(Department)
+    def __str__(self):
+        return self.name
     
 class Supplier(models.Model):
     name = models.CharField(max_length=200)

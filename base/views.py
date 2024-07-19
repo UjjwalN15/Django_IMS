@@ -12,7 +12,7 @@ from .models import *
 from .serializers import *
 from .permissions import CustomPermissions
 from django.contrib.auth.models import Group
-from django.db.models import Q 
+# from django.db.models import Q  => Need for OR clause
 # Create your views here.
 
 class DepartmentApiView(ModelViewSet):
@@ -22,6 +22,7 @@ class DepartmentApiView(ModelViewSet):
 class ProductApiView(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    #WE dont need to do anything in filtering in ModelViewSet
     filterset_fields = ['category','department']
     search_fields = ['name']
     #OR CLause
@@ -42,11 +43,13 @@ class ProductApiView(ModelViewSet):
 class ProductCategoryApiView(ModelViewSet):
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategorySerializer
-    def get(self, request):
-        queryset = self.get_queryset()
-        filter_queryset = self.filter_queryset(queryset)
-        serializer= self.serializer_class(filter_queryset,many=True)
-        return Response(serializer.data)
+    # def get(self, request):
+    #     queryset = self.get_queryset()
+    #     filter_queryset = self.filter_queryset(queryset)
+    #     serializer= self.serializer_class(filter_queryset,many=True)
+    #     return Response(serializer.data)
+    #OR For Filtering you just can do: filterset_fields = ['category','department'] <= The filtering is done with category an department
+    #In ModelViewSet
     search_fields = ['name']
 class SupplierApiView(ModelViewSet):
     queryset = Supplier.objects.all()
@@ -62,21 +65,22 @@ class PurchaseApiView(GenericAPIView):
         filter_queryset = self.filter_queryset(queryset)
         serializer= self.serializer_class(filter_queryset,many=True)
         return Response(serializer.data)
+    #In GenericAPIView, we need to define a get method function because filtering is all about getting values
     def post(self,request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response("Data Created!")
+            return Response(serializer.data)
         else:
-            return Response(serializers.errors)
+            return Response(serializer.errors)
         
 class PurchaseDetailApiView(GenericAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+    queryset = Purchase.objects.all()
+    serializer_class = PurchaseSerializer
     search_fields = ['name']
     def get(self, request, pk):
         try:
-            queryset = Product.objects.get(id=pk)
+            queryset = Purchase.objects.get(id=pk)
         except:
             return Response("Product Not Found",status=status.HTTP_404_NOT_FOUND)
         serializer = self.serializer_class(queryset)
@@ -84,23 +88,31 @@ class PurchaseDetailApiView(GenericAPIView):
     
     def put(self, request, pk):
         try:
-            queryset = Product.objects.get(id=pk)
+            queryset = Purchase.objects.get(id=pk)
         except:
             return Response("Product Not Found",status=status.HTTP_404_NOT_FOUND)
         serializer = self.serializer_class(queryset, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response("Data Updated!")
+            return Response(serializer.data)
         else:
             return Response(serializer.errors)
         
     def delete(self, request, pk):
         try:
-            queryset = Product.objects.get(id=pk)
+            queryset = Purchase.objects.get(id=pk)
         except:
             return Response("Product Not Found",status=status.HTTP_404_NOT_FOUND)
         queryset.delete()
         return Response("Data Deleted!")
+    
+    def patch(self, request,pk=None):
+        queryset = self.get_object()
+        serializer = PurchaseSerializer(instance=queryset, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([AllowAny,]) #This permission class should always below the api view
@@ -126,7 +138,7 @@ def register(request):
         a = serializer.save()
         a.password = hash_password
         a.save()
-        return Response('Data Created!', status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
