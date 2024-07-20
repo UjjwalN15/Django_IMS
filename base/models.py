@@ -42,4 +42,6 @@ class Purchase(models.Model):
     product = models.ForeignKey(Product,on_delete = models.CASCADE) #models.SET_NULL replaces the NUll value if Product is deleted
     supplier = models.ForeignKey(Supplier,on_delete = models.SET_NULL, null = True) 
     
-
+class Reports(models.Model):
+    title = models.CharField(max_length=300)
+    description = models.TextField()

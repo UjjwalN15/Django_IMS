@@ -12,6 +12,7 @@ urlpatterns = [
     path('supplier/<int:pk>/', SupplierApiView.as_view({'get': 'retrieve', 'put':'update','patch': 'partial_update', 'delete':'destroy'}),name='supplier'),
     path('purchase/', PurchaseApiView.as_view()),
     path('purchase/<int:pk>/', PurchaseDetailApiView.as_view()),
+    path('report/', ReportViewSet.as_view({'get': 'list'}), name='report'),
     path('login/',Login, name='login'),
     path('register/',register, name='register'),
     path('role/',groups, name='groups'),

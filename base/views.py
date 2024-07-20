@@ -148,3 +148,18 @@ def groups(request):
     groups_obj = Group.objects.all()
     serializer = GroupSerializer(groups_obj, many = True)
     return Response(serializer.data)
+
+class ReportViewSet(ModelViewSet):
+    queryset = Reports.objects.all()
+    serializer_class = ReportSerializer
+    search_fields = ['title']
+
+    def list(self, request):
+        users_count = User.objects.count()
+        products_count = Product.objects.count()
+        report = {
+            'users_count':users_count,
+            'total_products':products_count
+        }
+        return Response(report)
+
